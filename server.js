@@ -41,6 +41,9 @@ passport.use(
 
 let strategy = passport._strategies["mock"];
 
+strategy._redirectToCallback = true;
+strategy._callbackURL = "http://localhost:5000/mock/login";
+
 strategy._profile = {
   id: 1234,
   provider: "facebook-oauth2",
