@@ -3,8 +3,7 @@ var express = require("express");
 var app = express();
 var passport = require("passport");
 var session = require("express-session");
-var StrategyMock = require("./lib").Strategy;
-
+var OAuth2StrategyMock = require("./lib").OAuth2Strategy;
 var GoogleStrategyMock = require("./lib").GoogleTokenStrategy;
 
 app.set("port", process.env.PORT || 5000);
@@ -12,7 +11,9 @@ app.set("port", process.env.PORT || 5000);
 app.use(
   session({
     secret: "abc",
-    name: "test"
+    name: "test",
+    resave: false,
+    saveUninitialized: false
   })
 );
 
@@ -20,10 +21,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// create your verify function on your own -- should do similar things as
-// the "real" one.
+/* OAuth2 Strategy */
 passport.use(
-  new StrategyMock(
+  new OAuth2StrategyMock(
     {
       passReqToCallback: true,
       passAuthentication: true
@@ -34,6 +34,7 @@ passport.use(
   )
 );
 
+/* Google Token Strategy */
 passport.use(
   new GoogleStrategyMock(
     {
@@ -46,7 +47,7 @@ passport.use(
   )
 );
 
-let strategy = passport._strategies["mock-oauth2"];
+var strategy = passport._strategies["mock-oauth2"];
 
 strategy._redirectToCallback = true;
 strategy._callbackURL = "http://localhost:5000/mock/oauth2";
@@ -68,7 +69,7 @@ app.get(
   passport.authenticate("mock-oauth2", {
     session: false
   }),
-  (req, res) => {
+  function(req, res) {
     res.send(req.user);
   }
 );
@@ -78,17 +79,17 @@ app.get(
   passport.authenticate("mock-google-token", {
     session: false
   }),
-  (req, res) => {
+  function(req, res) {
     res.send(req.user);
   }
 );
 
-app.get("/test", (req, res) => {
+app.get("/test", function(req, res) {
   res.end();
 });
 
 var server = http.createServer(app);
 
-server.listen(process.env.PORT || 5000, () => {
+server.listen(process.env.PORT || 5000, function() {
   console.log("Express Server - Listening on port: " + app.get("port"));
 });
