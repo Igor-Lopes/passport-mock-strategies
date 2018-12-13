@@ -1,14 +1,9 @@
-/**
- * Author: Michael Weibel <michael.weibel@gmail.com>
- * License: MIT
- */
-
 var http = require("http");
 var express = require("express");
 var app = express();
 var passport = require("passport");
 var session = require("express-session");
-var StrategyMock = require("./lib");
+var StrategyMock = require("./lib").Strategy;
 
 app.set("port", process.env.PORT || 5000);
 
@@ -28,14 +23,11 @@ app.use(passport.session());
 passport.use(
   new StrategyMock(
     {
-      passReqToCallback: true
+      passReqToCallback: true,
+      passAuthentication: true
     },
-    function verifyFunction(req, user, done) {
-      // user = { id: 1};
-      // Emulate database fetch result
-      console.log("user");
-      console.log(req);
-
+    function verifyFunction(req, token, refreshToken, profile, done) {
+      console.log(profile);
       var mock = {
         id: 1,
         role: "test",
@@ -46,6 +38,20 @@ passport.use(
     }
   )
 );
+
+let strategy = passport._strategies["mock"];
+
+strategy._profile = {
+  id: 1234,
+  provider: "facebook-oauth2",
+  displayName: "Igor Lopes",
+  emails: [{ value: "igor.lopes@gmail.com" }],
+  photos: [
+    {
+      value: "https://via.placeholder.com/350x150"
+    }
+  ]
+};
 
 app.get(
   "/mock/login",
@@ -66,5 +72,3 @@ var server = http.createServer(app);
 server.listen(process.env.PORT || 5000, () => {
   console.log("Express Server - Listening on port: " + app.get("port"));
 });
-
-module.exports = function(app, options) {};
