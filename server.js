@@ -46,10 +46,10 @@ passport.use(
   )
 );
 
-let strategy = passport._strategies["mock"];
+let strategy = passport._strategies["mock-oauth2"];
 
 strategy._redirectToCallback = true;
-strategy._callbackURL = "http://localhost:5000/mock/login";
+strategy._callbackURL = "http://localhost:5000/mock/oauth2";
 
 strategy._profile = {
   id: 1234,
@@ -64,8 +64,8 @@ strategy._profile = {
 };
 
 app.get(
-  "/mock/login",
-  passport.authenticate("mock", {
+  "/mock/oauth2",
+  passport.authenticate("mock-oauth2", {
     session: false
   }),
   (req, res) => {
@@ -74,8 +74,8 @@ app.get(
 );
 
 app.get(
-  "/mock/google/login",
-  passport.authenticate("mock-google", {
+  "/mock/google",
+  passport.authenticate("mock-google-token", {
     session: false
   }),
   (req, res) => {
