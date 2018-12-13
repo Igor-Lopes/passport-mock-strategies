@@ -5,6 +5,8 @@ var passport = require("passport");
 var session = require("express-session");
 var StrategyMock = require("./lib").Strategy;
 
+var GoogleStrategyMock = require("./lib").GoogleTokenStrategy;
+
 app.set("port", process.env.PORT || 5000);
 
 app.use(
@@ -32,6 +34,18 @@ passport.use(
   )
 );
 
+passport.use(
+  new GoogleStrategyMock(
+    {
+      passReqToCallback: true,
+      passAuthentication: true
+    },
+    function verifyFunction(req, parsedToken, googleId, done) {
+      done(null, googleId);
+    }
+  )
+);
+
 let strategy = passport._strategies["mock"];
 
 strategy._redirectToCallback = true;
@@ -52,6 +66,16 @@ strategy._profile = {
 app.get(
   "/mock/login",
   passport.authenticate("mock", {
+    session: false
+  }),
+  (req, res) => {
+    res.send(req.user);
+  }
+);
+
+app.get(
+  "/mock/google/login",
+  passport.authenticate("mock-google", {
     session: false
   }),
   (req, res) => {
