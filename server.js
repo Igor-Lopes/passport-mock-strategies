@@ -27,14 +27,7 @@ passport.use(
       passAuthentication: true
     },
     function verifyFunction(req, token, refreshToken, profile, done) {
-      console.log(profile);
-      var mock = {
-        id: 1,
-        role: "test",
-        first_name: "John",
-        last_name: "Doe"
-      };
-      done(null, mock);
+      done(null, profile);
     }
   )
 );
@@ -62,7 +55,7 @@ app.get(
     session: false
   }),
   (req, res) => {
-    res.send("ok");
+    res.send(req.user);
   }
 );
 
