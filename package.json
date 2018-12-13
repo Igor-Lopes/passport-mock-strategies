@@ -1,0 +1,27 @@
+{
+  "name": "passport-mock-strategy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./lib",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Igor-Lopes/passport-mock-strategy.git"
+  },
+  "author": "igor-lopes",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Igor-Lopes/passport-mock-strategy/issues"
+  },
+  "homepage": "https://github.com/Igor-Lopes/passport-mock-strategy#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-session": "^1.15.6",
+    "passport": "^0.4.0"
+  }
+}
