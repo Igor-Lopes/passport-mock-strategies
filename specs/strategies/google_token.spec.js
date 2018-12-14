@@ -56,15 +56,27 @@ describe("Google Token Authenticate", function() {
       }
     );
 
-    strategy._parsedToken = "abc";
+    strategy._parsedToken = {
+      payload: {
+        name: "John Doe",
+        email: "john.doe@email.com",
+        picture: "https://via.placeholder.com/350x150"
+      }
+    };
 
-    strategy._googleId = "def";
+    strategy._googleId = "abc";
 
     strategy = Object.create(strategy);
 
     strategy.success = function(data) {
-      expect(data.parsedToken).to.eql("abc");
-      expect(data.googleId).to.eql("def");
+      expect(data.parsedToken).to.eql({
+        payload: {
+          name: "John Doe",
+          email: "john.doe@email.com",
+          picture: "https://via.placeholder.com/350x150"
+        }
+      });
+      expect(data.googleId).to.eql("abc");
       expect(data.request).to.eql(req);
       done();
     };

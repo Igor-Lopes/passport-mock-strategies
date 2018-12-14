@@ -3,11 +3,13 @@ var express = require("express");
 var app = express();
 var passport = require("passport");
 var session = require("express-session");
-var OAuth2StrategyMock = require("./lib").OAuth2Strategy;
-var GoogleStrategyMock = require("./lib").GoogleTokenStrategy;
+var OAuth2Strategy = require("../../lib").OAuth2Strategy;
+var GoogleStrategy = require("../../lib").GoogleTokenStrategy;
 
+/* Set port */
 app.set("port", process.env.PORT || 5000);
 
+/* Use session */
 app.use(
   session({
     secret: "abc",
@@ -21,9 +23,35 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-/* OAuth2 Strategy */
+/* Passport serialization */
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    //Mocked User
+    let user = {
+      id: 1234,
+      provider: "mock-oauth2",
+      displayName: "John Doe",
+      emails: [{ value: "john.doe@email.com" }],
+      photos: [
+        {
+          value: "https://via.placeholder.com/350x150"
+        }
+      ]
+    };
+
+    done(null, user);
+  } catch (ex) {
+    done(ex, null);
+  }
+});
+
+/* Configure OAuth2 Strategy */
 passport.use(
-  new OAuth2StrategyMock(
+  new OAuth2Strategy(
     {
       passReqToCallback: true,
       passAuthentication: true
@@ -34,29 +62,31 @@ passport.use(
   )
 );
 
-/* Google Token Strategy */
+/* Configure Google Token Strategy */
 passport.use(
-  new GoogleStrategyMock(
+  new GoogleStrategy(
     {
       passReqToCallback: true,
       passAuthentication: true
     },
     function verifyFunction(req, parsedToken, googleId, done) {
-      done(null, googleId);
+      done(null, parsedToken);
     }
   )
 );
 
-var strategy = passport._strategies["mock-oauth2"];
+/* Mock OAuth2 */
 
-strategy._redirectToCallback = true;
-strategy._callbackURL = "http://localhost:5000/mock/oauth2";
+var OAuth2StrategyMock = passport._strategies["mock-oauth2"];
 
-strategy._profile = {
+OAuth2StrategyMock._redirectToCallback = true;
+OAuth2StrategyMock._callbackURL = "/mock/oauth2/callback";
+
+OAuth2StrategyMock._profile = {
   id: 1234,
-  provider: "facebook-oauth2",
-  displayName: "Igor Lopes",
-  emails: [{ value: "igor.lopes@gmail.com" }],
+  provider: "mock-oauth2",
+  displayName: "John Doe",
+  emails: [{ value: "john.doe@email.com" }],
   photos: [
     {
       value: "https://via.placeholder.com/350x150"
@@ -64,17 +94,41 @@ strategy._profile = {
   ]
 };
 
+/* OAuth2 routes */
+
+// Main route
 app.get(
   "/mock/oauth2",
   passport.authenticate("mock-oauth2", {
-    session: false
-  }),
-  function(req, res) {
-    res.send(req.user);
-  }
+    scope: ["public_profile", "email"],
+    failureRedirect: "/"
+  })
 );
 
-app.get(
+// Callback route
+app.get("/mock/oauth2/callback", passport.authenticate("mock-oauth2"), function(
+  req,
+  res
+) {
+  res.send(req.user);
+});
+
+/* Mock Google Token */
+
+var GoogleTokenStrategyMock = passport._strategies["mock-google-token"];
+
+GoogleTokenStrategyMock._parsedToken = {
+  payload: {
+    name: "John Doe",
+    email: "john.doe@email.com",
+    picture: "https://via.placeholder.com/350x150"
+  }
+};
+
+GoogleTokenStrategyMock._googleId = "abc";
+
+//Route
+app.post(
   "/mock/google",
   passport.authenticate("mock-google-token", {
     session: false
@@ -84,9 +138,7 @@ app.get(
   }
 );
 
-app.get("/test", function(req, res) {
-  res.end();
-});
+/* Start server */
 
 var server = http.createServer(app);
 
