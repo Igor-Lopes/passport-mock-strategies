@@ -1,5 +1,5 @@
 {
-  "name": "passport-mock-strategy",
+  "name": "passport-mock-strategies",
   "version": "1.0.0",
   "description": "",
   "main": "./lib",
